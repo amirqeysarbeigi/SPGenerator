@@ -11,41 +11,6 @@ def cursor_func():
     return cursor
 
 
-# ! Not complete yet, do not use it.
-def table_primary_key(sp_config: dict):
-    cursor = cursor_func()
-
-    cursor.execute(
-        f"""
-            SELECT 
-                C.COLUMN_NAME
-            FROM  
-                INFORMATION_SCHEMA.TABLE_CONSTRAINTS T  
-                JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C ON C.CONSTRAINT_NAME=T.CONSTRAINT_NAME  
-            WHERE  
-                C.TABLE_NAME=[{sp_config['schema_name']}].[{sp_config['table_name']}] and T.CONSTRAINT_TYPE='PRIMARY KEY';
-                    """)
-
-    primary_key_table = cursor.fetchall()
-
-    return primary_key_table
-
-
-def sp_table_columns_names(sp_config: dict):
-    cursor = cursor_func()
-    cursor.execute(
-        f"""
-            SELECT 
-                c.name  'Column Name', 
-            FROM 
-                sys.columns as c
-            WHERE 
-                object_id = OBJECT_ID('{sp_config['schema_name']}.{sp_config['table_name']}')
-        """)
-    table_columns = cursor.fetchall()
-    return table_columns
-
-
 # TODO: Fix the COL_LENGTH problem for this function
 def sp_table_columns_info_raw(sp_config: dict):
     cursor = cursor_func()
@@ -78,6 +43,27 @@ def sp_table_columns_info_fixed(table_columns_raw):
     return table_columns_raw
 
 
+
+# ! Not complete yet, do not use it.
+def table_primary_key(sp_config: dict):
+    cursor = cursor_func()
+
+    cursor.execute(
+        f"""
+            SELECT 
+                C.COLUMN_NAME
+            FROM  
+                INFORMATION_SCHEMA.TABLE_CONSTRAINTS T  
+                JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C ON C.CONSTRAINT_NAME=T.CONSTRAINT_NAME  
+            WHERE  
+                C.TABLE_NAME=[{sp_config['schema_name']}].[{sp_config['table_name']}] and T.CONSTRAINT_TYPE='PRIMARY KEY';
+                    """)
+
+    primary_key_table = cursor.fetchall()
+
+    return primary_key_table
+
+
 def sp_input_declaration_string(table_columns):
     print(table_columns)
     input_declaration_string = ""
@@ -90,6 +76,11 @@ def sp_input_declaration_string(table_columns):
         str(table_columns[-1][2]) + " " + str(table_columns[-1][3]) + "\n"
     return input_declaration_string
 
+
+def sp_key_input_declaration_string(sp_config):
+    primary_key_table = table_primary_key(sp_config=sp_config)
+
+            
 
 def sp_insert_declaration_string(table_columns):
     insert_declaration_string = "("
@@ -131,7 +122,8 @@ def sp_update_values_string(table_columns_raw):
     return update_values_string
 
 
-def sp_update_primary_key_string(primary_key_table: list):
+def sp_conditional_selection_string(sp_info_config):
+    primary_key_table = table_primary_key(sp_config=sp_info_config)
     primary_key_string = ""
     i = 0
     for key in primary_key_table[:-1]:

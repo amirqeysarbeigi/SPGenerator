@@ -95,5 +95,3 @@ from Config import SPConfig
 #             END
 
 #         """)
-
-print("hello love")
