@@ -11,8 +11,8 @@ def sp_update(sp_info_config: dict, sp_name_config: str):
 
     update_values_string = SPTools.sp_update_values_string(table_columns_raw)
 
-    primary_key_string = SPTools.sp_update_primary_key_string(
-        SPTools.table_primary_key(sp_config=sp_info_config))
+    # ? check to see if the primary key funciton todo is solved
+    primary_keys_string = SPTools.sp_conditional_selection_string(sp_config=sp_info_config)
 
     cursor = SPTools.cursor_func()
 
@@ -35,7 +35,7 @@ def sp_update(sp_info_config: dict, sp_name_config: str):
                 )
                     
                 WHERE
-                    {primary_key_string};
+                    {primary_keys_string};
             END
 
         """)

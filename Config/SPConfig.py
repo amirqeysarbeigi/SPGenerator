@@ -1,13 +1,13 @@
 sp_info_config = {
-    'database_name': '',
+    'database_name': 'RequestRegistrationF',
     'schema_name': 'Merchant',
     'table_name': 'merchant'
 }
 
 sp_name_config = {
-    'Insert': '',
+    'Insert': 'sp_Insert',
     'Update': 'sp_Update',
-    'VirtualDelete': '',
-    'Load': '',
-    'List': ''
+    'VirtualDelete': 'sp_VitualDelete',
+    'Load': 'sp_Load',
+    'List': 'sp_List'
 }
