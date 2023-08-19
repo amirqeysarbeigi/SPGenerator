@@ -12,6 +12,7 @@ def cursor_func():
 
 
 # TODO: Fix the COL_LENGTH problem for this function
+# *     Done, Ready to use
 def sp_table_columns_info_raw(sp_config: dict):
     cursor = cursor_func()
     cursor.execute(
@@ -29,29 +30,26 @@ def sp_table_columns_info_raw(sp_config: dict):
                 object_id = OBJECT_ID('{sp_config['schema_name']}.{sp_config['table_name']}')
         """)
     table_columns = cursor.fetchall()
+    cursor.close()
+    
     return table_columns
 
 
 def sp_table_columns_info_fixed(table_columns_raw):
-
     for record in table_columns_raw:
-        
         if record[3] == True:
             record[3] = "= NULL"
         elif record[3] == False:
             record[3] == ""
         else:
             raise("Incorrect value for boolean type is_nullable")
-        
         if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
             record[2] = str(int(record[2]) // 2)
-
     return table_columns_raw
 
 
-
 # ! Not complete yet, do not use it.
-def table_primary_key(sp_config: dict):
+def primary_key_table(sp_config: dict):
     cursor = cursor_func()
 
     cursor.execute(
@@ -61,22 +59,23 @@ def table_primary_key(sp_config: dict):
                     INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS as T ON (C.CONSTRAINT_NAME = T.CONSTRAINT_NAME)
             WHERE	C.TABLE_SCHEMA = '{sp_config['schema_name']}'
                     AND	C.TABLE_NAME = '{sp_config['schema_name']}'
-                    T.CONSTRAINT_TYPE = 'PRIMARY KEY';
+                    AND T.CONSTRAINT_TYPE = 'PRIMARY KEY';
         """
     )
-    
-    cursor.execute(
-        f"""
-            SELECT	COLUMN_NAME
-            FROM	INFORMATION_SCHEMA.KEY_COLUMN_USAGE as C
-            WHERE	C.TABLE_SCHEMA = '{sp_config['schema_name']}'
-                    AND	C.TABLE_NAME = '{sp_config['table_name']}'
-                    AND	OBJECTPROPERTY(OBJECT_ID('[{sp_config['schema_name']}].[C.CONSTRAINT_NAME]'), 'IsPrimaryKey') = 1;
-        """
-    )
+
+    # cursor.execute(
+    #     f"""
+    #         SELECT	COLUMN_NAME
+    #         FROM	INFORMATION_SCHEMA.KEY_COLUMN_USAGE as C
+    #         WHERE	C.TABLE_SCHEMA = '{sp_config['schema_name']}'
+    #                 AND	C.TABLE_NAME = '{sp_config['table_name']}'
+    #                 AND	OBJECTPROPERTY(OBJECT_ID('[{sp_config['schema_name']}].[C.CONSTRAINT_NAME]'), 'IsPrimaryKey') = 1;
+    #     """
+    # )
 
     primary_key_table = cursor.fetchall()
-
+    cursor.close()
+    
     return primary_key_table
 
 
@@ -94,9 +93,8 @@ def sp_input_declaration_string(table_columns):
 
 
 def sp_key_input_declaration_string(sp_config):
-    primary_key_table = table_primary_key(sp_config=sp_config)
+    primary_key_table = primary_key_table(sp_config=sp_config)
 
-            
 
 def sp_insert_declaration_string(table_columns):
     insert_declaration_string = "("
@@ -111,7 +109,8 @@ def sp_insert_declaration_string(table_columns):
 def sp_insert_values_string(table_columns):
     insert_values_string = "("
     for record in table_columns[:-1]:
-        insert_values_string = insert_values_string + "@" + str(record[0]) + ", "
+        insert_values_string = insert_values_string + \
+            "@" + str(record[0]) + ", "
     insert_values_string = insert_values_string + \
         "@" + str(table_columns[-1][0]) + ")"
     return insert_values_string
@@ -139,7 +138,7 @@ def sp_update_values_string(table_columns_raw):
 
 
 def sp_conditional_selection_string(sp_info_config):
-    primary_key_table = table_primary_key(sp_config=sp_info_config)
+    primary_key_table = primary_key_table(sp_config=sp_info_config)
     primary_key_string = ""
     i = 0
     for key in primary_key_table[:-1]:
