@@ -29,12 +29,22 @@ def sp_table_columns_info_raw(sp_config: dict):
         """)
     table_columns = cursor.fetchall()
     cursor.close()
-    
+
     return table_columns
 
 
 def sp_table_columns_info_fixed(table_columns_raw):
     for record in table_columns_raw:
+
+        if((record[1] == 'char') | 
+           (record[1] == 'nchar') | 
+           (record[1] == 'varchar') | 
+           (record[1] == 'nvarchar')):
+            record[2] = "(" + record[2] + ")"
+
+        if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
+            record[2] = str(int(record[2]) // 2)
+
         if record[3] == True:
             record[3] = "= NULL"
         elif record[3] == False:
@@ -43,6 +53,7 @@ def sp_table_columns_info_fixed(table_columns_raw):
             raise("Incorrect value for boolean type is_nullable")
         if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
             record[2] = str(int(record[2]) // 2)
+
     return table_columns_raw
 
 
@@ -73,7 +84,7 @@ def primary_key_table(sp_config: dict):
 
     primary_key_table = cursor.fetchall()
     cursor.close()
-    
+
     return primary_key_table
 
 
