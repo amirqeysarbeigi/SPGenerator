@@ -11,8 +11,6 @@ def cursor_func():
     return cursor
 
 
-# TODO: Fix the COL_LENGTH problem for this function
-# *     Done, Ready to use
 def sp_table_columns_info_raw(sp_config: dict):
     cursor = cursor_func()
     cursor.execute(
@@ -48,7 +46,6 @@ def sp_table_columns_info_fixed(table_columns_raw):
     return table_columns_raw
 
 
-# ! Not complete yet, do not use it.
 def primary_key_table(sp_config: dict):
     cursor = cursor_func()
 
@@ -63,6 +60,7 @@ def primary_key_table(sp_config: dict):
         """
     )
 
+    # #TODO Can be implemented as an alternative faster way to  get the primary key table
     # cursor.execute(
     #     f"""
     #         SELECT	COLUMN_NAME
