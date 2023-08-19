@@ -19,7 +19,7 @@ def sp_table_columns_info_raw(sp_config: dict):
             SELECT 
                 c.name  'Column Name', 
                 t.Name  'Data Type',
-                COL_LENGTH('{sp_config['schema_name']}.{sp_config['table_name']}', 'c.name'),
+                COL_LENGTH('{sp_config['schema_name']}.{sp_config['table_name']}', c.name),
                 c.is_nullable
             FROM 
                 sys.columns as c
@@ -33,13 +33,19 @@ def sp_table_columns_info_raw(sp_config: dict):
 
 
 def sp_table_columns_info_fixed(table_columns_raw):
+
     for record in table_columns_raw:
+        
         if record[3] == True:
             record[3] = "= NULL"
         elif record[3] == False:
             record[3] == ""
         else:
             raise("Incorrect value for boolean type is_nullable")
+        
+        if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
+            record[2] = str(int(record[2]) // 2)
+
     return table_columns_raw
 
 
@@ -50,14 +56,24 @@ def table_primary_key(sp_config: dict):
 
     cursor.execute(
         f"""
-            SELECT 
-                C.COLUMN_NAME
-            FROM  
-                INFORMATION_SCHEMA.TABLE_CONSTRAINTS T  
-                JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C ON C.CONSTRAINT_NAME=T.CONSTRAINT_NAME  
-            WHERE  
-                C.TABLE_NAME=[{sp_config['schema_name']}].[{sp_config['table_name']}] and T.CONSTRAINT_TYPE='PRIMARY KEY';
-                    """)
+            SELECT	COLUMN_NAME
+            FROM	INFORMATION_SCHEMA.KEY_COLUMN_USAGE as C
+                    INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS as T ON (C.CONSTRAINT_NAME = T.CONSTRAINT_NAME)
+            WHERE	C.TABLE_SCHEMA = '{sp_config['schema_name']}'
+                    AND	C.TABLE_NAME = '{sp_config['schema_name']}'
+                    T.CONSTRAINT_TYPE = 'PRIMARY KEY';
+        """
+    )
+    
+    cursor.execute(
+        f"""
+            SELECT	COLUMN_NAME
+            FROM	INFORMATION_SCHEMA.KEY_COLUMN_USAGE as C
+            WHERE	C.TABLE_SCHEMA = '{sp_config['schema_name']}'
+                    AND	C.TABLE_NAME = '{sp_config['table_name']}'
+                    AND	OBJECTPROPERTY(OBJECT_ID('[{sp_config['schema_name']}].[C.CONSTRAINT_NAME]'), 'IsPrimaryKey') = 1;
+        """
+    )
 
     primary_key_table = cursor.fetchall()
 
