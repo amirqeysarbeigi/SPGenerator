@@ -36,23 +36,25 @@ def sp_table_columns_info_raw(sp_config: dict):
 def sp_table_columns_info_fixed(table_columns_raw):
     for record in table_columns_raw:
 
-        if((record[1] == 'char') | 
-           (record[1] == 'nchar') | 
-           (record[1] == 'varchar') | 
-           (record[1] == 'nvarchar')):
-            record[2] = "(" + record[2] + ")"
-
         if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
             record[2] = str(int(record[2]) // 2)
 
-        if record[3] == True:
+        if str(record[3]) == 'True':
             record[3] = "= NULL"
-        elif record[3] == False:
-            record[3] == ""
+        elif str(record[3]) == 'False':
+            record[3] = ""
         else:
             raise("Incorrect value for boolean type is_nullable")
         if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
             record[2] = str(int(record[2]) // 2)
+
+        if((record[1] == 'char') | 
+           (record[1] == 'nchar') | 
+           (record[1] == 'varchar') | 
+           (record[1] == 'nvarchar')):
+            record[2] = "(" + str(record[2]) + ")"
+        else:
+            record[2] = ""
 
     return table_columns_raw
 
