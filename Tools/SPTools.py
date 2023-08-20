@@ -177,14 +177,9 @@ def sp_update_values_string(table_columns_raw):
     return update_values_string
 
 
-def sp_conditional_selection_string(sp_info_config):
-    primary_key_table = primary_key_table(sp_config=sp_info_config)
-    primary_key_string = ""
-    i = 0
-    for key in primary_key_table[:-1]:
-        primary_key_string = primary_key_string + f"AND ([{key}] = @{key}), \n"
-    primary_key_string = (
-        primary_key_string
-        + f"AND ([{primary_key_table[-1]}] = @{primary_key_table[-1]})"
-    )
-    return primary_key_string
+def sp_conditional_selection_string(condition_columns_table: tuple):
+    condition = ""
+    for key in condition_columns_table[:][0]:
+        condition = condition + f"([{str(key)}] = @{str(key)}),\nAND "
+    condition = condition[:-6]
+    return condition
