@@ -96,15 +96,31 @@ def sp_input_declaration_string(table_columns):
     for record in table_columns[:-1]:
         input_declaration_string = input_declaration_string + "@" + \
             str(record[0]) + " " + str(record[1]) + " " + \
-            str(record[2]) + " " + str(record[3]) + ", \n"
-    input_declaration_string = input_declaration_string + "@" + \
-        str(table_columns[-1][0]) + " " + str(table_columns[-1][1]) + " " + \
-        str(table_columns[-1][2]) + " " + str(table_columns[-1][3]) + "\n"
+            str(record[2]) + " " + str(record[3]) + ",\n"
+    # ?added this part instead to see if it works:
+    input_declaration_string = input_declaration_string[:-2]
+    
+    # #TODO if it worked correctly without the tree lines below, then erase them.
+    # input_declaration_string = input_declaration_string + "@" + \
+    #     str(table_columns[-1][0]) + " " + str(table_columns[-1][1]) + " " + \
+    #     str(table_columns[-1][2]) + " " + str(table_columns[-1][3]) + "\n"
     return input_declaration_string
 
 
 def sp_key_input_declaration_string(sp_config):
-    primary_key_table = primary_key_table(sp_config=sp_config)
+    table_column_raw = sp_table_columns_info_raw(sp_config= sp_config)    
+    table_column_fixed = sp_table_columns_info_fixed(table_column_raw)
+    key_table = primary_key_table(sp_config=sp_config) 
+    
+    
+    input_declaration_string = ""
+    
+    for record in table_column_fixed:
+        for primary_key in key_table:
+            if record[0] == primary_key[0]:
+                input_declaration_string += "@" + record[0] + " " + record[1] + record[2] + ",\n"
+    input_declaration_string = input_declaration_string[:-2]
+    return input_declaration_string
 
 
 def sp_insert_declaration_string(table_columns):
@@ -157,3 +173,4 @@ def sp_conditional_selection_string(sp_info_config):
     primary_key_string = primary_key_string + \
         f"AND ([{primary_key_table[-1]}] = @{primary_key_table[-1]})"
     return primary_key_string
+
