@@ -1,18 +1,23 @@
 from Tools import SPTools
 
-def sp_update(sp_info_config: dict, sp_name_config: str): 
 
+def sp_update(sp_info_config: dict, sp_name_config: str):
     table_columns_raw = SPTools.sp_table_columns_raw(sp_config=sp_info_config)
 
     table_columns = SPTools.sp_table_columns_info_fixed(
-        table_columns_raw=table_columns_raw)
+        table_columns_raw=table_columns_raw
+    )
 
-    input_declaration_string = SPTools.sp_input_declaration_string(table_columns=table_columns)
+    input_declaration_string = SPTools.sp_input_declaration_string(
+        table_columns=table_columns
+    )
 
     update_values_string = SPTools.sp_update_values_string(table_columns_raw)
 
     # ? check to see if the primary key funciton todo is solved
-    primary_keys_string = SPTools.sp_conditional_selection_string(sp_config=sp_info_config)
+    primary_keys_string = SPTools.sp_conditional_selection_string(
+        sp_config=sp_info_config
+    )
 
     cursor = SPTools.cursor_func()
 
@@ -38,6 +43,6 @@ def sp_update(sp_info_config: dict, sp_name_config: str):
                     {primary_keys_string};
             END
 
-        """)
+        """
+    )
     cursor.close()
-    

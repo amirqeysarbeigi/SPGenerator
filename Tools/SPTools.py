@@ -26,7 +26,8 @@ def sp_table_columns_info_raw(sp_config: dict):
                 sys.types as t ON c.user_type_id = t.user_type_id
             WHERE 
                 object_id = OBJECT_ID('{sp_config['schema_name']}.{sp_config['table_name']}')
-        """)
+        """
+    )
     table_columns = cursor.fetchall()
     cursor.close()
 
@@ -35,23 +36,24 @@ def sp_table_columns_info_raw(sp_config: dict):
 
 def sp_table_columns_info_fixed(table_columns_raw):
     for record in table_columns_raw:
-
-        if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
+        if (record[1] == "nvarchar") | (record[1] == "ncahr"):
             record[2] = str(int(record[2]) // 2)
 
-        if str(record[3]) == 'True':
+        if str(record[3]) == "True":
             record[3] = "= NULL"
-        elif str(record[3]) == 'False':
+        elif str(record[3]) == "False":
             record[3] = ""
         else:
-            raise("Incorrect value for boolean type is_nullable")
-        if((record[1] == 'nvarchar') | (record[1] == 'ncahr')):
+            raise ("Incorrect value for boolean type is_nullable")
+        if (record[1] == "nvarchar") | (record[1] == "ncahr"):
             record[2] = str(int(record[2]) // 2)
 
-        if((record[1] == 'char') | 
-           (record[1] == 'nchar') | 
-           (record[1] == 'varchar') | 
-           (record[1] == 'nvarchar')):
+        if (
+            (record[1] == "char")
+            | (record[1] == "nchar")
+            | (record[1] == "varchar")
+            | (record[1] == "nvarchar")
+        ):
             record[2] = "(" + str(record[2]) + ")"
         else:
             record[2] = ""
@@ -94,12 +96,21 @@ def sp_input_declaration_string(table_columns):
     print(table_columns)
     input_declaration_string = ""
     for record in table_columns[:-1]:
-        input_declaration_string = input_declaration_string + "@" + \
-            str(record[0]) + " " + str(record[1]) + " " + \
-            str(record[2]) + " " + str(record[3]) + ",\n"
+        input_declaration_string = (
+            input_declaration_string
+            + "@"
+            + str(record[0])
+            + " "
+            + str(record[1])
+            + " "
+            + str(record[2])
+            + " "
+            + str(record[3])
+            + ",\n"
+        )
     # ?added this part instead to see if it works:
     input_declaration_string = input_declaration_string[:-2]
-    
+
     # #TODO if it worked correctly without the tree lines below, then erase them.
     # input_declaration_string = input_declaration_string + "@" + \
     #     str(table_columns[-1][0]) + " " + str(table_columns[-1][1]) + " " + \
@@ -108,17 +119,18 @@ def sp_input_declaration_string(table_columns):
 
 
 def sp_key_input_declaration_string(sp_config):
-    table_column_raw = sp_table_columns_info_raw(sp_config= sp_config)    
+    table_column_raw = sp_table_columns_info_raw(sp_config=sp_config)
     table_column_fixed = sp_table_columns_info_fixed(table_column_raw)
-    key_table = primary_key_table(sp_config=sp_config) 
-    
-    
+    key_table = primary_key_table(sp_config=sp_config)
+
     input_declaration_string = ""
-    
+
     for record in table_column_fixed:
         for primary_key in key_table:
             if record[0] == primary_key[0]:
-                input_declaration_string += "@" + record[0] + " " + record[1] + record[2] + ",\n"
+                input_declaration_string += (
+                    "@" + record[0] + " " + record[1] + record[2] + ",\n"
+                )
     input_declaration_string = input_declaration_string[:-2]
     return input_declaration_string
 
@@ -126,20 +138,18 @@ def sp_key_input_declaration_string(sp_config):
 def sp_insert_declaration_string(table_columns):
     insert_declaration_string = "("
     for record in table_columns[:-1]:
-        insert_declaration_string = insert_declaration_string + \
-            str(record[0]) + ", "
-    insert_declaration_string = insert_declaration_string + \
-        str(table_columns[-1][0]) + ")"
+        insert_declaration_string = insert_declaration_string + str(record[0]) + ", "
+    insert_declaration_string = (
+        insert_declaration_string + str(table_columns[-1][0]) + ")"
+    )
     return insert_declaration_string
 
 
 def sp_insert_values_string(table_columns):
     insert_values_string = "("
     for record in table_columns[:-1]:
-        insert_values_string = insert_values_string + \
-            "@" + str(record[0]) + ", "
-    insert_values_string = insert_values_string + \
-        "@" + str(table_columns[-1][0]) + ")"
+        insert_values_string = insert_values_string + "@" + str(record[0]) + ", "
+    insert_values_string = insert_values_string + "@" + str(table_columns[-1][0]) + ")"
     return insert_values_string
 
 
@@ -147,20 +157,23 @@ def sp_update_values_string(table_columns_raw):
     update_values_string = ""
     for record in table_columns_raw[:-1]:
         update_values_string = update_values_string + record[0] + " = "
-        if (record[3] == True):
-            update_values_string = update_values_string + \
-                f"ISNULL(@{record[0]}, [{record[0]}])" + ",\n"
+        if record[3] == True:
+            update_values_string = (
+                update_values_string + f"ISNULL(@{record[0]}, [{record[0]}])" + ",\n"
+            )
         else:
-            update_values_string = update_values_string + \
-                f"@{record[0]}" + ", \n"
-    update_values_string = update_values_string + \
-        table_columns_raw[-1][0] + " = "
-    if (record[3] == True):
-        update_values_string = update_values_string + \
-            f"ISNULL(@{table_columns_raw[-1][0]}, [{table_columns_raw[-1][0]}])" + "\n"
+            update_values_string = update_values_string + f"@{record[0]}" + ", \n"
+    update_values_string = update_values_string + table_columns_raw[-1][0] + " = "
+    if record[3] == True:
+        update_values_string = (
+            update_values_string
+            + f"ISNULL(@{table_columns_raw[-1][0]}, [{table_columns_raw[-1][0]}])"
+            + "\n"
+        )
     else:
-        update_values_string = update_values_string + \
-            f"@{table_columns_raw[-1][0]}" + "\n"
+        update_values_string = (
+            update_values_string + f"@{table_columns_raw[-1][0]}" + "\n"
+        )
     return update_values_string
 
 
@@ -170,7 +183,8 @@ def sp_conditional_selection_string(sp_info_config):
     i = 0
     for key in primary_key_table[:-1]:
         primary_key_string = primary_key_string + f"AND ([{key}] = @{key}), \n"
-    primary_key_string = primary_key_string + \
-        f"AND ([{primary_key_table[-1]}] = @{primary_key_table[-1]})"
+    primary_key_string = (
+        primary_key_string
+        + f"AND ([{primary_key_table[-1]}] = @{primary_key_table[-1]})"
+    )
     return primary_key_string
-
