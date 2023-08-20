@@ -188,7 +188,7 @@ def sp_loadList(sp_info_config: dict, sp_name_config: str):
 
     cursor.execute(
         f"""
-            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config['VirtualDelete']}_{sp_info_config['table_name']}](
+            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config['LoadList']}_{sp_info_config['table_name']}](
                 {input_declaration_string}
             )
             AS
