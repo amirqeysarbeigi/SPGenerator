@@ -36,7 +36,7 @@ def sp_table_columns_info_raw(sp_config: dict):
 
 def sp_table_columns_info_fixed(table_columns_raw):
     for record in table_columns_raw:
-        if (record[1] == "nvarchar") | (record[1] == "ncahr"):
+        if (record[1] == "nvarchar") | (record[1] == "nchar"):
             record[2] = str(int(record[2]) // 2)
 
         if str(record[3]) == "True":
@@ -45,9 +45,7 @@ def sp_table_columns_info_fixed(table_columns_raw):
             record[3] = ""
         else:
             raise ("Incorrect value for boolean type is_nullable")
-        if (record[1] == "nvarchar") | (record[1] == "ncahr"):
-            record[2] = str(int(record[2]) // 2)
-
+        
         if (
             (record[1] == "char")
             | (record[1] == "nchar")
@@ -92,10 +90,10 @@ def primary_key_table(sp_config: dict):
     return primary_key_table
 
 
-def sp_input_declaration_string(table_columns):
-    print(table_columns)
+def sp_input_declaration_string(table_columns_fixed):
+    print(table_columns_fixed)
     input_declaration_string = ""
-    for record in table_columns[:-1]:
+    for record in table_columns_fixed[:-1]:
         input_declaration_string = (
             input_declaration_string
             + "@"
@@ -135,17 +133,17 @@ def sp_key_input_declaration_string(sp_config):
     return input_declaration_string
 
 
-def sp_insert_declaration_string(table_columns):
+def sp_insert_declaration_string(table_columns_fixed):
     insert_declaration_string = "("
-    for record in table_columns[:-1]:
+    for record in table_columns_fixed[:-1]:
         insert_declaration_string = insert_declaration_string + "[" + str(record[0]) + "]" + ",\n"
     insert_declaration_string = insert_declaration_string[:-2] + ")"
     return insert_declaration_string
 
 
-def sp_insert_values_string(table_columns):
+def sp_insert_values_string(table_columns_fixed):
     insert_values_string = "("
-    for record in table_columns[:]:
+    for record in table_columns_fixed[:]:
         insert_values_string = insert_values_string + "@" + str(record[0]) + ",\n"
     insert_values_string = insert_values_string[:-2] + ")"
     return insert_values_string
@@ -171,3 +169,14 @@ def sp_conditional_selection_string(condition_columns_table: tuple):
         condition = condition + f"([{str(key)}] = @{str(key)}),\nAND "
     condition = condition[:-6]
     return condition
+
+
+def sp_loadList_conditional_selection_string(table_columns_raw: tuple):
+    condition_string = "("
+    for record in table_columns_raw[:]:
+        if (record[3] == True):
+            condition_string = condition_string + f"(([{record[0]}] = @{record[0]}) or @{record[0]} is null)\nAND "
+        else:
+            condition_string = condition_string + f"([{record[0]}] = @{record[0]})\nAND "
+    condition_string = condition_string[:-5] + ");"
+    return condition_string
