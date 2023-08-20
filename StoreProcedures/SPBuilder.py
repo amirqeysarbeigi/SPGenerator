@@ -88,8 +88,11 @@ def sp_delete(sp_info_config: dict, sp_name_config: str):
         sp_config=sp_info_config
     )
     primary_keys = SPTools.primary_key_table(sp_config=sp_info_config)
-    
-    condition = SPTools.sp_conditional_selection_string(primary_keys)
+    condition = ""
+
+    for key in primary_keys[0]:
+        condition += "[" + str(key) + "]" + " = " + "@" + str(key) + "\nand "
+    condition = condition[:5]
 
     cursor = SPTools.cursor_func()
 
@@ -106,21 +109,9 @@ def sp_delete(sp_info_config: dict, sp_name_config: str):
                 
                 -- insert statements for procedure here
                 DELETE FROM [{sp_info_config['schema_name']}].[{sp_info_config['table_name']}]
-                WHERE  {condition}
+                WHERE  ({condition})
             END
         """
     )
 
     cursor.close()
-
-
-# def sp_virtual_delete(sp_info_config: dict, sp_name_config: str):
-    
-#     # sp_update_call_statement = "Update %s @rowId = asd;lkfj, @name = 'a;lksdfjl;a', @family = a;dlskfj;al"
-#     input_declaration_string = SPTools.sp_key_input_declaration_string(sp_info_config)
-#     primary_keys = SPTools.primary_key_table(sp_info_config)
-    
-    
-    
-    
-    
