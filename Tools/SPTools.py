@@ -35,7 +35,9 @@ def sp_table_columns_info_raw(sp_config: dict):
 
 
 def sp_table_columns_info_fixed(table_columns_raw):
-    for record in table_columns_raw:
+    from copy import deepcopy
+    table_columns = deepcopy(table_columns_raw)
+    for record in table_columns:
         if (record[1] == "nvarchar") | (record[1] == "nchar"):
             record[2] = str(int(record[2]) // 2)
 
@@ -55,8 +57,7 @@ def sp_table_columns_info_fixed(table_columns_raw):
             record[2] = "(" + str(record[2]) + ")"
         else:
             record[2] = ""
-
-    return table_columns_raw
+    return table_columns
 
 
 def primary_key_table(sp_config: dict):
@@ -175,7 +176,7 @@ def sp_conditional_selection_string(condition_columns_table: tuple):
 
 def sp_loadList_conditional_selection_string(table_columns_raw: tuple):
     condition_string = "("
-    for record in table_columns_raw[:]:
+    for record in table_columns_raw:
         if record[3] == True:
             condition_string = (
                 condition_string
