@@ -138,42 +138,30 @@ def sp_key_input_declaration_string(sp_config):
 def sp_insert_declaration_string(table_columns):
     insert_declaration_string = "("
     for record in table_columns[:-1]:
-        insert_declaration_string = insert_declaration_string + str(record[0]) + ", "
-    insert_declaration_string = (
-        insert_declaration_string + str(table_columns[-1][0]) + ")"
-    )
+        insert_declaration_string = insert_declaration_string + "[" + str(record[0]) + "]" + ",\n"
+    insert_declaration_string = insert_declaration_string[:-2] + ")"
     return insert_declaration_string
 
 
 def sp_insert_values_string(table_columns):
     insert_values_string = "("
-    for record in table_columns[:-1]:
-        insert_values_string = insert_values_string + "@" + str(record[0]) + ", "
-    insert_values_string = insert_values_string + "@" + str(table_columns[-1][0]) + ")"
+    for record in table_columns[:]:
+        insert_values_string = insert_values_string + "@" + str(record[0]) + ",\n"
+    insert_values_string = insert_values_string[:-2] + ")"
     return insert_values_string
 
 
 def sp_update_values_string(table_columns_raw):
     update_values_string = ""
-    for record in table_columns_raw[:-1]:
+    for record in table_columns_raw[:]:
         update_values_string = update_values_string + record[0] + " = "
         if record[3] == True:
             update_values_string = (
                 update_values_string + f"ISNULL(@{record[0]}, [{record[0]}])" + ",\n"
             )
         else:
-            update_values_string = update_values_string + f"@{record[0]}" + ", \n"
-    update_values_string = update_values_string + table_columns_raw[-1][0] + " = "
-    if record[3] == True:
-        update_values_string = (
-            update_values_string
-            + f"ISNULL(@{table_columns_raw[-1][0]}, [{table_columns_raw[-1][0]}])"
-            + "\n"
-        )
-    else:
-        update_values_string = (
-            update_values_string + f"@{table_columns_raw[-1][0]}" + "\n"
-        )
+            update_values_string = update_values_string + f"@{record[0]}" + ",\n"
+    update_values_string = update_values_string[:-2]
     return update_values_string
 
 
