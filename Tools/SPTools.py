@@ -45,7 +45,7 @@ def sp_table_columns_info_fixed(table_columns_raw):
             record[3] = ""
         else:
             raise ("Incorrect value for boolean type is_nullable")
-        
+
         if (
             (record[1] == "char")
             | (record[1] == "nchar")
@@ -136,7 +136,9 @@ def sp_key_input_declaration_string(sp_config):
 def sp_insert_declaration_string(table_columns_fixed):
     insert_declaration_string = "("
     for record in table_columns_fixed[:-1]:
-        insert_declaration_string = insert_declaration_string + "[" + str(record[0]) + "]" + ",\n"
+        insert_declaration_string = (
+            insert_declaration_string + "[" + str(record[0]) + "]" + ",\n"
+        )
     insert_declaration_string = insert_declaration_string[:-2] + ")"
     return insert_declaration_string
 
@@ -174,9 +176,14 @@ def sp_conditional_selection_string(condition_columns_table: tuple):
 def sp_loadList_conditional_selection_string(table_columns_raw: tuple):
     condition_string = "("
     for record in table_columns_raw[:]:
-        if (record[3] == True):
-            condition_string = condition_string + f"(([{record[0]}] = @{record[0]}) or @{record[0]} is null)\nAND "
+        if record[3] == True:
+            condition_string = (
+                condition_string
+                + f"(([{record[0]}] = @{record[0]}) or @{record[0]} is null)\nAND "
+            )
         else:
-            condition_string = condition_string + f"([{record[0]}] = @{record[0]})\nAND "
+            condition_string = (
+                condition_string + f"([{record[0]}] = @{record[0]})\nAND "
+            )
     condition_string = condition_string[:-5] + ");"
     return condition_string
