@@ -7,7 +7,8 @@ sp_info_config = {
 sp_name_config = {
     "Insert": "sp_Insert",
     "Update": "sp_Update",
-    "VirtualDelete": "sp_VitualDelete",
+    "VirtualDelete": "sp_VirtualDelete",
+    "Delete": "sp_Delete",
     "Load": "sp_Load",
     "List": "sp_List",
 }
