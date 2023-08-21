@@ -1,16 +1,24 @@
 from Tools import SPTools
 
+
+
 def sp_insert(sp_info_config: dict, sp_name_config: str):
+    connection = SPTools.connection_opener()
+
     table_columns_raw = SPTools.sp_table_columns_info_raw(sp_info_config)
     table_columns = SPTools.sp_table_columns_info_fixed(table_columns_raw)
 
-    input_declaration_string = SPTools.sp_input_declaration_string(table_columns_fixed=table_columns)
+    input_declaration_string = SPTools.sp_input_declaration_string(
+        table_columns_fixed=table_columns
+    )
 
-    insert_declaration_string = SPTools.sp_insert_declaration_string(table_columns_fixed=table_columns)
+    insert_declaration_string = SPTools.sp_insert_declaration_string(
+        table_columns_fixed=table_columns
+    )
 
     insert_values_string = SPTools.sp_insert_values_string(table_columns)
 
-    cursor = SPTools.cursor_func()
+    cursor = connection.cursor()
     cursor.execute(
         f"""  
             CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config}_{sp_info_config['table_name']}] (
@@ -24,35 +32,40 @@ def sp_insert(sp_info_config: dict, sp_name_config: str):
 
                 -- Insert statements for procedure here
                 INSERT INTO [{sp_info_config['schema_name']}].[{sp_info_config['table_name']}]
-                    {insert_declaration_string}
+                    ({insert_declaration_string})
                 VALUES
-                    {insert_values_string}
+                    ({insert_values_string})
             END
         """
     )
-
+    connection.commit()
     cursor.close()
+    SPTools.connection_closer(connection=connection)
 
 
 def sp_update(sp_info_config: dict, sp_name_config: str):
-    table_columns_raw = SPTools.sp_table_columns_raw(sp_config=sp_info_config)
+    connection = SPTools.connection_opener()
+
+    table_columns_raw = SPTools.sp_table_columns_info_raw(sp_config=sp_info_config)
 
     table_columns = SPTools.sp_table_columns_info_fixed(
         table_columns_raw=table_columns_raw
     )
 
     input_declaration_string = SPTools.sp_input_declaration_string(
-        table_columns=table_columns
+        table_columns_fixed=table_columns
     )
 
-    update_values_string = SPTools.sp_update_values_string(table_columns_raw)
+    update_values_string = SPTools.sp_update_values_string(sp_config=sp_info_config)
+
+    primary_keys = SPTools.primary_key_table(sp_config=sp_info_config)
 
     # ? check to see if the primary key funciton todo is solved
     primary_keys_string = SPTools.sp_conditional_selection_string(
-        sp_config=sp_info_config
+        condition_columns_table=primary_keys
     )
 
-    cursor = SPTools.cursor_func()
+    cursor = connection.cursor()
 
     cursor.execute(
         f"""
@@ -67,10 +80,9 @@ def sp_update(sp_info_config: dict, sp_name_config: str):
                 
                 -- insert statements for procedure here
                 UPDATE
-                    [{sp_info_config['schema_name']}].[{sp_info_config['table_name']}
-                SET (
+                    [{sp_info_config['schema_name']}].[{sp_info_config['table_name']}]
+                SET 
                     {update_values_string}
-                )
                     
                 WHERE
                     {primary_keys_string};
@@ -78,10 +90,15 @@ def sp_update(sp_info_config: dict, sp_name_config: str):
 
         """
     )
+
+    connection.commit()
     cursor.close()
+    SPTools.connection_closer(connection=connection)
 
 
 def sp_delete(sp_info_config: dict, sp_name_config: str):
+    connection = SPTools.connection_opener()
+
     input_declaration_string = SPTools.sp_key_input_declaration_string(
         sp_config=sp_info_config
     )
@@ -89,7 +106,7 @@ def sp_delete(sp_info_config: dict, sp_name_config: str):
 
     condition = SPTools.sp_conditional_selection_string(primary_keys)
 
-    cursor = SPTools.cursor_func()
+    cursor = connection.cursor()
 
     cursor.execute(
         f"""
@@ -109,17 +126,21 @@ def sp_delete(sp_info_config: dict, sp_name_config: str):
         """
     )
 
+    connection.commit()
     cursor.close()
+    SPTools.connection_closer(connection=connection)
 
 
 def sp_virtual_delete(sp_info_config: dict, sp_name_config: str):
+    connection = SPTools.connection_opener()
+
     input_declaration_string = SPTools.sp_key_input_declaration_string(
         sp_config=sp_info_config
     )
     primary_keys = SPTools.primary_key_table(sp_config=sp_info_config)
     condition = SPTools.sp_conditional_selection_string(primary_keys)
 
-    cursor = SPTools.cursor_func()
+    cursor = connection.cursor()
 
     cursor.execute(
         f"""
@@ -143,7 +164,9 @@ def sp_virtual_delete(sp_info_config: dict, sp_name_config: str):
         """
     )
 
+    connection.commit()
     cursor.close()
+    SPTools.connection_closer(connection=connection)
 
     # * Second way to do it is to call the sp_update for this table
     # input_for_sp_update = None
@@ -166,6 +189,8 @@ def sp_virtual_delete(sp_info_config: dict, sp_name_config: str):
 
 
 def sp_loadList(sp_info_config: dict, sp_name_config: str):
+    connection = SPTools.connection_opener()
+
     table_columns_raw = SPTools.sp_table_columns_info_raw(sp_config=sp_info_config)
 
     table_columns = SPTools.sp_table_columns_info_fixed(
@@ -182,7 +207,7 @@ def sp_loadList(sp_info_config: dict, sp_name_config: str):
         table_columns_raw=table_columns_raw
     )
 
-    cursor = SPTools.cursor_func()
+    cursor = connection.cursor()
 
     cursor.execute(
         f"""
@@ -206,4 +231,6 @@ def sp_loadList(sp_info_config: dict, sp_name_config: str):
         """
     )
 
+    connection.commit()
     cursor.close()
+    SPTools.connection_closer(connection=connection)
