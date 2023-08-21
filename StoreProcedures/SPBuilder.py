@@ -13,7 +13,7 @@ def sp_insert(sp_info_config: dict, sp_name_config: str):
     cursor = SPTools.cursor_func()
     cursor.execute(
         f"""  
-            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config['Insert']}_{sp_info_config['table_name']}] (
+            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config}_{sp_info_config['table_name']}] (
                 {input_declaration_string}
             )
             AS
@@ -94,7 +94,7 @@ def sp_delete(sp_info_config: dict, sp_name_config: str):
 
     cursor.execute(
         f"""
-            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config['Delete']}_{sp_info_config['table_name']}](
+            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config}_{sp_info_config['table_name']}](
                 {input_declaration_string}
             )
             AS
@@ -124,7 +124,7 @@ def sp_virtual_delete(sp_info_config: dict, sp_name_config: str):
 
     cursor.execute(
         f"""
-            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config['VirtualDelete']}_{sp_info_config['table_name']}](
+            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config}_{sp_info_config['table_name']}](
                 {input_declaration_string}
             )
             AS
@@ -187,7 +187,7 @@ def sp_loadList(sp_info_config: dict, sp_name_config: str):
 
     cursor.execute(
         f"""
-            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config['LoadList']}_{sp_info_config['table_name']}](
+            CREATE PROCEDURE [{sp_info_config['schema_name']}].[{sp_name_config}_{sp_info_config['table_name']}](
                 {input_declaration_string}
             )
             AS
