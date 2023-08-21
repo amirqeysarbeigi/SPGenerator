@@ -92,7 +92,6 @@ def primary_key_table(sp_config: dict):
 
 
 def sp_input_declaration_string(table_columns_fixed):
-    print(table_columns_fixed)
     input_declaration_string = ""
     for record in table_columns_fixed[:-1]:
         input_declaration_string = (
