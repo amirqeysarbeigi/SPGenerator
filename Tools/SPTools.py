@@ -2,18 +2,18 @@ from Config import SQLServerConfig
 from copy import deepcopy
 
 
-def connection_string_func():
+def connection_opener():
     connection = SQLServerConfig.sql_connection_config()
     return connection
 
 
-def cursor_func():
-    cursor = connection_string_func().cursor()
-    return cursor
+def connection_closer(connection):
+    connection.close()
 
 
 def sp_table_columns_info_raw(sp_config: dict):
-    cursor = cursor_func()
+    connection = connection_opener()
+    cursor = connection.cursor()
     cursor.execute(
         f"""
             SELECT 
@@ -31,12 +31,14 @@ def sp_table_columns_info_raw(sp_config: dict):
     )
     table_columns = cursor.fetchall()
     cursor.close()
+    connection_closer(connection=connection)
 
     return table_columns
 
 
 def sp_table_columns_info_fixed(table_columns_raw):
     from copy import deepcopy
+
     table_columns = deepcopy(table_columns_raw)
     for record in table_columns:
         if (record[1] == "nvarchar") | (record[1] == "nchar"):
@@ -62,7 +64,8 @@ def sp_table_columns_info_fixed(table_columns_raw):
 
 
 def primary_key_table(sp_config: dict):
-    cursor = cursor_func()
+    connection = connection_opener()
+    cursor = connection.cursor()
 
     cursor.execute(
         f"""
@@ -88,6 +91,7 @@ def primary_key_table(sp_config: dict):
 
     primary_key_table = cursor.fetchall()
     cursor.close()
+    connection_closer(connection=connection)
 
     return primary_key_table
 
@@ -137,35 +141,45 @@ def sp_key_input_declaration_string(sp_config):
 
 def sp_insert_declaration_string(table_columns_fixed):
     table_columns = deepcopy(table_columns_fixed)
-    insert_declaration_string = "("
+    insert_declaration_string = ""
     for record in table_columns:
         insert_declaration_string = (
             insert_declaration_string + "[" + str(record[0]) + "]" + ",\n"
         )
-    insert_declaration_string = insert_declaration_string[:-2] + ")"
+    insert_declaration_string = insert_declaration_string[:-2] + ""
     return insert_declaration_string
 
 
 def sp_insert_values_string(table_columns_fixed):
     table_columns = deepcopy(table_columns_fixed)
-    insert_values_string = "("
+    insert_values_string = ""
     for record in table_columns:
         insert_values_string = insert_values_string + "@" + str(record[0]) + ",\n"
-    insert_values_string = insert_values_string[:-2] + ")"
+    insert_values_string = insert_values_string[:-2]
     return insert_values_string
 
 
-def sp_update_values_string(table_columns_raw):
-    table_columns = deepcopy(table_columns_raw)
+def sp_update_values_string(sp_config: dict):
+    table_columns = deepcopy(sp_table_columns_info_raw(sp_config=sp_config))
+    primary_keys = deepcopy(primary_key_table(sp_config=sp_config))
+
+    for record in table_columns:
+        for primary_key in primary_keys:
+            if record[0] == primary_key[0]:
+                record[0] = ""
+
     update_values_string = ""
     for record in table_columns:
-        update_values_string = update_values_string + record[0] + " = "
-        if record[3] == True:
-            update_values_string = (
-                update_values_string + f"ISNULL(@{record[0]}, [{record[0]}])" + ",\n"
-            )
-        else:
-            update_values_string = update_values_string + f"@{record[0]}" + ",\n"
+        if record[0] != "":
+            update_values_string = update_values_string + record[0] + " = "
+            if record[3] == True:
+                update_values_string = (
+                    update_values_string
+                    + f"ISNULL(@{record[0]}, [{record[0]}])"
+                    + ",\n"
+                )
+            else:
+                update_values_string = update_values_string + f"@{record[0]}" + ",\n"
     update_values_string = update_values_string[:-2]
     return update_values_string
 
@@ -182,7 +196,7 @@ def sp_conditional_selection_string(condition_columns_table: tuple):
 def sp_loadList_conditional_selection_string(table_columns_raw: tuple):
     table_columns = deepcopy(table_columns_raw)
     condition_string = "("
-    for record in table_columns_raw:
+    for record in table_columns:
         if record[3] == True:
             condition_string = (
                 condition_string
