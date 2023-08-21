@@ -1,4 +1,5 @@
 from Config import SQLServerConfig
+from copy import deepcopy
 
 
 def connection_string_func():
@@ -92,8 +93,9 @@ def primary_key_table(sp_config: dict):
 
 
 def sp_input_declaration_string(table_columns_fixed):
+    table_columns = deepcopy(table_columns_fixed)
     input_declaration_string = ""
-    for record in table_columns_fixed[:-1]:
+    for record in table_columns:
         input_declaration_string = (
             input_declaration_string
             + "@"
@@ -109,7 +111,7 @@ def sp_input_declaration_string(table_columns_fixed):
     # ?added this part instead to see if it works:
     input_declaration_string = input_declaration_string[:-2]
 
-    # #TODO if it worked correctly without the tree lines below, then erase them.
+    # #TODO if it worked correctly without the three lines below, then erase them.
     # input_declaration_string = input_declaration_string + "@" + \
     #     str(table_columns[-1][0]) + " " + str(table_columns[-1][1]) + " " + \
     #     str(table_columns[-1][2]) + " " + str(table_columns[-1][3]) + "\n"
@@ -134,8 +136,9 @@ def sp_key_input_declaration_string(sp_config):
 
 
 def sp_insert_declaration_string(table_columns_fixed):
+    table_columns = deepcopy(table_columns_fixed)
     insert_declaration_string = "("
-    for record in table_columns_fixed[:-1]:
+    for record in table_columns:
         insert_declaration_string = (
             insert_declaration_string + "[" + str(record[0]) + "]" + ",\n"
         )
@@ -144,16 +147,18 @@ def sp_insert_declaration_string(table_columns_fixed):
 
 
 def sp_insert_values_string(table_columns_fixed):
+    table_columns = deepcopy(table_columns_fixed)
     insert_values_string = "("
-    for record in table_columns_fixed[:]:
+    for record in table_columns:
         insert_values_string = insert_values_string + "@" + str(record[0]) + ",\n"
     insert_values_string = insert_values_string[:-2] + ")"
     return insert_values_string
 
 
 def sp_update_values_string(table_columns_raw):
+    table_columns = deepcopy(table_columns_raw)
     update_values_string = ""
-    for record in table_columns_raw[:]:
+    for record in table_columns:
         update_values_string = update_values_string + record[0] + " = "
         if record[3] == True:
             update_values_string = (
@@ -166,14 +171,16 @@ def sp_update_values_string(table_columns_raw):
 
 
 def sp_conditional_selection_string(condition_columns_table: tuple):
+    condition_columns = deepcopy(condition_columns_table)
     condition = ""
-    for key in condition_columns_table[:][0]:
+    for key in condition_columns[:][0]:
         condition = condition + f"([{str(key)}] = @{str(key)}),\nAND "
     condition = condition[:-6]
     return condition
 
 
 def sp_loadList_conditional_selection_string(table_columns_raw: tuple):
+    table_columns = deepcopy(table_columns_raw)
     condition_string = "("
     for record in table_columns_raw:
         if record[3] == True:
