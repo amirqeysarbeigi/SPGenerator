@@ -8,9 +8,6 @@ def connection_string_build(connection_dict: dict):
 def database_connection_build(connection_dict):
     try:
         connection = pyodbc.connect(connection_string_build(connection_dict))
-        print("connection is successful")
-        print("-------------------ballow S1------------------------")
     except Exception as e:
-        print("-------------------ballow E1------------------------")
         print(f"connection is unsucceful! \n Your error type: {str(e)}")
     return connection
