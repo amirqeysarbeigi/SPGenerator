@@ -28,7 +28,6 @@ def sp_insert(sp_info_config: dict, sp_name_config: str):
                 VALUES
                     {insert_values_string}
             END
-            GO
         """
     )
 
